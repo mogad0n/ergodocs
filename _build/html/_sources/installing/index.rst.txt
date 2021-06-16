@@ -8,6 +8,5 @@
     becoming_an_operator.rst
     rehashing.rst
     environment_variables.rst
-    productionizing.rst
     tls_certificates.rst
     upgrading.rst

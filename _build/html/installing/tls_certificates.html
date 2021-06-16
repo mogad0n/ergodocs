@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Using valid TLS certificates &#8212; Ergo  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Upgrading to a new version of Ergo" href="upgrading.html" />
+    <link rel="prev" title="Environment variables" href="environment_variables.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="using-valid-tls-certificates">
+<h1>Using valid TLS certificates<a class="headerlink" href="#using-valid-tls-certificates" title="Permalink to this headline">¶</a></h1>
+<p>The other major hurdle for productionizing (but one well worth the
+effort) is obtaining valid TLS certificates for your domain, if you
+haven’t already done so:</p>
+<ol class="arabic simple">
+<li><p>The simplest way to get valid TLS certificates is from <a class="reference external" href="https://letsencrypt.org/">Let’s
+Encrypt</a> with
+<a class="reference external" href="https://certbot.eff.org/">Certbot</a>. The correct procedure will
+depend on whether you are already running a web server on port 80. If
+you are, follow the guides on the Certbot website; if you aren’t, you
+can use
+<code class="docutils literal notranslate"><span class="pre">certbot</span> <span class="pre">certonly</span> <span class="pre">--standalone</span> <span class="pre">--preferred-challenges</span> <span class="pre">http</span> <span class="pre">-d</span> <span class="pre">example.com</span></code>
+(replace <code class="docutils literal notranslate"><span class="pre">example.com</span></code> with your domain).</p></li>
+<li><p>At this point, you should have certificates available at
+<code class="docutils literal notranslate"><span class="pre">/etc/letsencrypt/live/example.com</span></code> (replacing <code class="docutils literal notranslate"><span class="pre">example.com</span></code> with
+your domain). You should serve <code class="docutils literal notranslate"><span class="pre">fullchain.pem</span></code> as the certificate
+and <code class="docutils literal notranslate"><span class="pre">privkey.pem</span></code> as its private key. However, these files are
+owned by root and the private key is not readable by the ergo role
+user, so you won’t be able to use them directly in their current
+locations. You can write a post-renewal hook for certbot to make
+copies of these certificates accessible to the ergo role user. For
+example, install the following script as
+<code class="docutils literal notranslate"><span class="pre">/etc/letsencrypt/renewal-hooks/post/install-ergo-certificates</span></code>,
+again replacing <code class="docutils literal notranslate"><span class="pre">example.com</span></code> with your domain name, and chmod it
+0755:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nb">set</span> -eu
+
+<span class="nb">umask</span> <span class="m">077</span>
+cp /etc/letsencrypt/live/example.com/fullchain.pem /home/ergo/
+cp /etc/letsencrypt/live/example.com/privkey.pem /home/ergo/
+chown ergo:ergo /home/ergo/*.pem
+<span class="c1"># rehash ergo, which will reload the certificates:</span>
+systemctl reload ergo.service
+</pre></div>
+</div>
+<p>Executing this script manually will install the certificates for the
+first time and perform a rehash, enabling them.</p>
+<p>If you are using Certbot 0.29.0 or higher, you can also change the
+ownership of the files under <code class="docutils literal notranslate"><span class="pre">/etc/letsencrypt</span></code> so that the ergo user
+can read them, as described in the <a class="reference external" href="https://www.unrealircd.org/docs/Setting_up_certbot_for_use_with_UnrealIRCd#Tweaking_permissions_on_the_key_file">UnrealIRCd
+documentation</a>.</p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Ergo</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="unix_like.html">macOS / Linux / Raspberry Pi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="building_from_source.html">Building from source</a></li>
+<li class="toctree-l1"><a class="reference internal" href="becoming_an_operator.html">Becoming an operator</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rehashing.html">Rehashing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">Environment variables</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Using valid TLS certificates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrading.html">Upgrading to a new version of Ergo</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">&lt;no title&gt;</a><ul>
+      <li>Previous: <a href="environment_variables.html" title="previous chapter">Environment variables</a></li>
+      <li>Next: <a href="upgrading.html" title="next chapter">Upgrading to a new version of Ergo</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Shivaram Lingamneni, Daniel Oaks.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/installing/tls_certificates.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
