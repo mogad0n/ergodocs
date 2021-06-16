@@ -92,7 +92,7 @@ interested in what our software can do!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    
    installing/index.rst
    features/index.rst

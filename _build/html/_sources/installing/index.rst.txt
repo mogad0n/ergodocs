@@ -1,5 +1,9 @@
+==========
+Installing
+==========
+
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     windows.rst
     unix_like.rst
@@ -8,5 +12,6 @@
     becoming_an_operator.rst
     rehashing.rst
     environment_variables.rst
+    productionizing.rst
     tls_certificates.rst
     upgrading.rst

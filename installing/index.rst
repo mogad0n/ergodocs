@@ -1,5 +1,9 @@
+==========
+Installing
+==========
+
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     windows.rst
     unix_like.rst
